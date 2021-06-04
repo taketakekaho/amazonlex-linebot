@@ -1,0 +1,26 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-06-04T20:30:29Z",
+  "id": "amazonlex-linebot",
+  "duration": 82,
+  "title": "Amazon LexでLINEボット3分クッキング",
+  "authors": "kahori_takeda",
+  "summary": "日本語対応したAmazon LexとLINEをつないで〇〇するボットを作ります",
+  "source": "11Enun6aRzuH5eMNfss5-3aBO25hrx8HtgPUF31vrrmg",
+  "theme": "web",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "Web"
+  ],
+  "tags": [
+    "web"
+  ],
+  "feedback": "https://twitter.com/taketakekaho",
+  "ga": "UA-148911740-2",
+  "url": "amazonlex-linebot"
+}

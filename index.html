@@ -1,0 +1,620 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Amazon LexでLINEボット3分クッキング</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="UA-148911740-2"
+                  id="amazonlex-linebot"
+                  title="Amazon LexでLINEボット3分クッキング"
+                  environment="web"
+                  feedback-link="https://twitter.com/taketakekaho">
+    
+      <google-codelab-step label="はじめに" duration="1">
+        <p class="image-container"><img style="width: 624.00px" src="img\a597c406c3dd0f96.png"></p>
+<p><strong>Last Updated:</strong> 2021-06-4</p>
+<p>この手順はAWSエバンジェリスト亀田さん主催の勉強会「<a href="https://awsbasics.connpass.com/event/209428/" target="_blank">AWSの基礎を学ぼう 特別編 最新サービスをみんなで触ってみる はじめてのチャットボット</a>」で利用したハンズオンです。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\e998504f78d95eff.png"></p>
+<p>個人や会社の皆さんに共有して社内勉強会や復習などで自由に使って頂いて構いません。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ハンズオン前提" duration="2">
+        <h2 is-upgraded><strong>ターゲット</strong></h2>
+<p>このハンズオンは、Amazon Lexのチュートリアルやフォーマットとして提供されているボットのテンプレートを使ってLINEとつないでボットを作る入門編のハンズオンです。</p>
+<p>以下のような方をターゲットとしています。</p>
+<ul>
+<li>Amazon Lexを初めて触る方</li>
+<li>AWS初心者の技術者、あるいは技術者を目指している方</li>
+<li>LINEとAWSをつないだAIボット作成のイメージをつかみたい方</li>
+</ul>
+<h2 is-upgraded><strong>必要なもの</strong></h2>
+<ul>
+<li>インターネットに接続可能なPC</li>
+<li>ブラウザ（推奨：FirefoxまたはGoogle Chrome）</li>
+<li>AWSマネジメントコンソールにログイン可能なAdministrator権限のIAMユーザー</li>
+<li>スマートフォンで利用中のLINEアプリ</li>
+<li>LINEのログインアカウント（メールアドレス）とパスワード</li>
+<li>LINE Developerアカウント（LINE Botを作成するために、LINE DevelopersConsoleへのアカウント登録が必要となります。）</li>
+</ul>
+<h2 is-upgraded><strong>使用予定のAWSサービス</strong></h2>
+<ul>
+<li>AWS IAM ： AWSのアカウントや権限を管理・制御するやつ</li>
+<li>Amazon Lex ： 自然言語のボット作れるやつ</li>
+<li>Amazon Lambda ：サーバ意識せずにプログラム置いて動かせるやつ</li>
+<li>Amazon API Gateway ：外部などのサービスとつなぐためのAPIを作れるやつ</li>
+</ul>
+<h2 is-upgraded><strong>ルール・進め方</strong></h2>
+<ul>
+<li>説明しながら画面共有して手順のとおりに進めていきます。一緒に作業できる方は手順と画面を参考にしながら作業しましょう。作業をしない方は画面を見て頂きイメージをつかみましょう。</li>
+<li>時間が限られているため、作業を止めずに作業を進めます。疑問点があったり行き詰ったらZoomチャットあるいは #awsbasics タグ付けてツイートして頂ければわかる範囲でのちほどフォローします。</li>
+</ul>
+<h2 is-upgraded><strong>免責事項について</strong></h2>
+<p>ハンズオンで利用するサービスは無料枠を中心として構成していますが、一部課金が発生する場合があります。 また、ハンズオンで作成した環境を削除しない場合には、課金が続く可能性があります。 課金が発生したことによる責任は負えませんので、ご承知おきください。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="準備" duration="0">
+        <h2 is-upgraded><strong>サンプルデータダウンロード</strong></h2>
+<p><a href="https://github.com/taketakekaho/amazonlex-linebot" target="_blank">こちらのGithubに</a>アクセスしZIPファイルをダウンロードしてください。</p>
+<p class="image-container"><img style="width: 555.75px" src="img\2601924580571688.png"></p>
+<p>.zipファイルを解凍した以下のファイルをハンズオンで利用します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>ファイル名</p>
+</td><td colspan="1" rowspan="1"><p>用途</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>bot.zip</p>
+</td><td colspan="1" rowspan="1"><p>Lambda関数インポート</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>amazon-lex-icon.png</p>
+</td><td colspan="1" rowspan="1"><p>ボットアイコン</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>richmenu_awsbasics.png</p>
+</td><td colspan="1" rowspan="1"><p>LINEリッチメニュー</p>
+</td></tr>
+</table>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="完成イメージ" duration="2">
+        <p>完成イメージです。LINEからレンタカーとホテルの予約を自然言語の対話で行うことができるデモボットです。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\2ae5302edfb45b33.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="システム構成" duration="0">
+        <p>以下がシステム構成です。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\dbc9e44e1bfd196b.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Amazon Lexサービスとは" duration="2">
+        <h2 is-upgraded><strong>待望！日本語対応したAmazon Lexとは</strong></h2>
+<p>ずーーーーっと待ってた。Amazon Lexが2021年4月2日に日本語に対応し、東京リージョンで使える状態になりました。</p>
+<p>Amazon Lexはチャットボットを作るための対話型AIサービスです。Amazon Alexa と同じテクノロジーを利用した音声またはテキスト インターフェイスを使用してアプリケーションを構築できます。</p>
+<h2 is-upgraded><strong>Amazon Lexで使う用語を理解しよう</strong></h2>
+<p>Amazon Lexでは以下の5つの用語がよくでてきます。</p>
+<ul>
+<li>Intents</li>
+<li>Utterances</li>
+<li>Slots</li>
+<li>Prompts</li>
+<li>Fulfillment</li>
+</ul>
+<p class="image-container"><img style="width: 624.00px" src="img\249a0484d11ea7c9.png"></p>
+<aside class="special"><p><strong>ノート</strong>：<a href="https://aws.amazon.com/jp/blogs/news/amazon-lex-tokyo/" target="_blank">亀田さんの書いたブログ</a>がわかりやすいです</p>
+</aside>
+<h2 is-upgraded><strong>Amazon Lex料金</strong></h2>
+<ul>
+<li>リクエスト単位で課金されます。ボットへの入力があるたびに1リクエストとカウント。例えば、ボットに5回の入力を行った場合は、5リクエストとして請求されます。</li>
+<li>Amazon Lexには無料枠があります。Amazon Lex の使用を開始した日から最初の1年間は、1か月あたり最大で10,000回のテキストリクエストと5,000回の音声リクエストまたは音声間隔を処理することができます。</li>
+</ul>
+<p>対話のAPI利用 or リアルタイムのストリーム会話なのか、音声 or テキストどちらかなどで金額が異なりますが、今回のハンズオンのようなテキストでの対話式の個別API利用の場合の料金例は以下になります。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\a5b38edf1321f6ba.png"></p>
+<p>初めてAmazon Lexを利用してから1年以内なら無料ですし、それ以降だった場合でも100回ボットと会話したとしても10円以下で使える計算になります。</p>
+<aside class="special"><p><strong>ノート</strong>：2021/6/4時点の金額です。詳細は<a href="https://aws.amazon.com/jp/lex/pricing/" target="_blank">こちら</a>をご確認ください。</p>
+</aside>
+<p>では、ハンズオン始めましょう！</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="LINE公式アカウント作成" duration="5">
+        <p>LINEボットの設定を行います。構成図だとここです。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\80f18435e21de153.png"></p>
+<h2 is-upgraded>LINE Developersへのアカウント登録</h2>
+<p>LINEボットを作成するためには、LINE Developersへの登録が必要となります。</p>
+<p><a href="https://developers.line.biz/console" target="_blank">LINE Developersコンソール</a>で[コンソール]もしくは[ログイン]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\63ea7920211ab285.png"></p>
+<p>認証画面で[LINEアカウントでログイン]をクリック</p>
+<p class="image-container"><img style="width: 426.50px" src="img\46f104ee37c4fb96.png"></p>
+<p>LINEアカウントのメールアドレスとパスワードを入力し、ログインしてください。</p>
+<p class="image-container"><img style="width: 434.51px" src="img\d382ec907522161a.png"></p>
+<aside class="special"><p>スマホのLINEアプリがある方はLINEQRコードログインした方が簡単です</p>
+</aside>
+<p>以下のような二要素認証のための4桁の数字が表示されるため</p>
+<p class="image-container"><img style="width: 298.30px" src="img\cae4bd7a71f0b68f.png"></p>
+<p>LINEアプリで4桁を入力してください。</p>
+<p class="image-container"><img style="width: 201.22px" src="img\b318fc9878f4fd82.png"></p>
+<p>ログイン後にアカウント情報の登録画面になりますので任意の開発者名とメールアドレスを入力し、[アカウントを作成]をクリック</p>
+<p class="image-container"><img style="width: 487.50px" src="img\44b511d13822e5bb.png"></p>
+<p>登録できました。</p>
+<p class="image-container"><img style="width: 490.50px" src="img\a6680846c547b05f.png"></p>
+<aside class="special"><p>LINE Messaging APIの使い方の詳細は<a href="https://developers.line.biz/ja/docs/messaging-api/getting-started/#using-console" target="_blank">公式ドキュメント</a>参照</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="新規プロバイダー作成" duration="5">
+        <p>LINEボットを開発するために開発者の所属となるプロバイダーを作成します。[新規プロバイダー]ボタンをクリック</p>
+<p class="image-container"><img style="width: 517.50px" src="img\9672c9867e164871.png"></p>
+<aside class="special"><p>すでにプロバイダーを作成済の方は新規作成は不要です。</p>
+</aside>
+<p>個人開発者ですのでプロバイダー名は本名でもニックネームでも任意で設定してください。</p>
+<p class="image-container"><img style="width: 550.00px" src="img\315a13fd6a625376.png"></p>
+<p>作成できました。今日からあなたもLINE Developerの一員です！</p>
+<p class="image-container"><img style="width: 489.50px" src="img\284c2097cb129208.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="チャネル（LINEボットアプリ）作成" duration="5">
+        <p>LINEボットアカウントを作成します。以下の画面で[Messaging API]をクリックします。</p>
+<p class="image-container"><img style="width: 508.50px" src="img\4afc1fda94dcc476.png"></p>
+<p>チャネル作成画面で、必要項目を埋めて[作成]ボタンをクリックします。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>チャネルの種類</p>
+</td><td colspan="1" rowspan="1"><p>Messaging API</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>プロバイダー</p>
+</td><td colspan="1" rowspan="1"><p>（作成したプロバイダー）</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>チャネルアイコン</p>
+</td><td colspan="1" rowspan="1"><p>任意</p>
+</td><td colspan="1" rowspan="1"><p>*1度設定すると1時間変更不可</p>
+<p>*素材フォルダにサンプルのJAWSアイコン素材あり</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>チャネル名</p>
+</td><td colspan="1" rowspan="1"><p>任意</p>
+</td><td colspan="1" rowspan="1"><p>*一度設定したら7日間変更不可</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>チャネル説明</p>
+</td><td colspan="1" rowspan="1"><p>任意</p>
+</td><td colspan="1" rowspan="1"><p>*埋まっていればOK</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>大業種</p>
+</td><td colspan="1" rowspan="1"><p>通信・情報・メディア</p>
+</td><td colspan="1" rowspan="1"><p>*ハンズオン用なので適当でOK</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>小業種</p>
+</td><td colspan="1" rowspan="1"><p>その他通信・情報・メディア</p>
+</td><td colspan="1" rowspan="1"><p>*ハンズオン用なので適当でOK</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>メールアドレス</p>
+</td><td colspan="1" rowspan="1"><p>（LINEアカウントメールアドレス）</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>プライバシーポリシー</p>
+</td><td colspan="1" rowspan="1"><p>空欄</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>サービス利用規約</p>
+</td><td colspan="1" rowspan="1"><p>空欄</p>
+</td></tr>
+</table>
+<h2 is-upgraded><img style="width: 462.07px" src="img\19160de1cbce692f.png"></h2>
+<p class="image-container"><img style="width: 505.90px" src="img\193dc99d915ac3f3.png"></p>
+<p>[作成]ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 372.79px" src="img\b86d69bf07e2becf.png"></p>
+<p>[同意する]をクリック</p>
+<p class="image-container"><img style="width: 601.70px" src="img\f4e62ac071ba5016.png"></p>
+<p>チャネル作成できました。</p>
+<p class="image-container"><img style="width: 509.72px" src="img\d3aafe66d5da29db.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ボットアカウント設定" duration="5">
+        <h2 is-upgraded>リッチメニュー設定</h2>
+<p>LINEのリッチメニューを設定します。[LINE official Account manager]をクリックします。</p>
+<p class="image-container"><img style="width: 460.54px" src="img\c1377de8245d59b7.png"></p>
+<p>LINE Official Account Manager（公式アカウントからの配信などを行うコンソール）に画面遷移しますので、ホームタブをクリックし</p>
+<p class="image-container"><img style="width: 624.00px" src="img\1ba931881970002f.png"></p>
+<p>左ペインからトークルーム管理＞リッチメニューをクリックします。</p>
+<p class="image-container"><img style="width: 216.50px" src="img\fd6d6cdc5756bf00.png"></p>
+<p>リッチメニュー設定画面で[作成]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\a07fb254c4555a86.png"></p>
+<p>以下のようにリッチメニューを設定し</p>
+<p class="image-container"><img style="width: 624.00px" src="img\5295e2e74f9ec768.png"></p>
+<p>コンテンツ設定項目で[テンプレートを選択]をクリック</p>
+<p class="image-container"><img style="width: 327.50px" src="img\799d68ece82f6504.png"></p>
+<p>小項目の以下を選択して[選択]</p>
+<p class="image-container"><img style="width: 446.50px" src="img\85d2f8b3ac3f5e33.png"></p>
+<p>[テンプレートを選択]をクリックし</p>
+<p class="image-container"><img style="width: 258.00px" src="img\dc40209b1ee41814.png"></p>
+<p>素材フォルダのrichmenu_awsbasics.pngをアップロードします。</p>
+<p class="image-container"><img style="width: 460.00px" src="img\4ad5c37f86400084.png"></p>
+<p>アクション項目で以下を設定し、[保存]をクリックします。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>タイプ</p>
+</td><td colspan="1" rowspan="1"><p>URL</p>
+</td><td colspan="1" rowspan="1"><p>アクションラベル</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>A</p>
+</td><td colspan="1" rowspan="1"><p>テキスト</p>
+</td><td colspan="1" rowspan="1"><p>-</p>
+</td><td colspan="1" rowspan="1"><p>ホテルを予約する</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>B</p>
+</td><td colspan="1" rowspan="1"><p>テキスト</p>
+</td><td colspan="1" rowspan="1"><p>-</p>
+</td><td colspan="1" rowspan="1"><p>レンタカーを予約する</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>C</p>
+</td><td colspan="1" rowspan="1"><p>リンク</p>
+</td><td colspan="1" rowspan="1"><p>https://twitter.com/intent/tweet?hashtags=awsbasics</p>
+</td><td colspan="1" rowspan="1"><p>ツイートする</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img\c14fe846c2cd623.png"></p>
+<p>リッチメニューが設定できました。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\88b3edcdb572bc76.png"></p>
+<aside class="special"><p>Note：他お好きなリッチメニュー画像やリンクで設置してください。リッチメニューはLINEボットを作る際の紹介の意味で掲載しており、必ずリッチメニューを設置しないとボットが動かないというわけではありません。</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="LINE Messaging API設定" duration="5">
+        <p>APIの設定を行うため、別タブで操作していた<a href="https://developers.line.biz/console/" target="_blank">LINE Developer コンソール</a>の画面に戻ります。チャネル基本設定タブのチャネルシークレットをメモしておきます。</p>
+<p class="image-container"><img style="width: 462.50px" src="img\f4c48c579861e05c.png"></p>
+<p>Messaging API設定タブをクリックし</p>
+<p class="image-container"><img style="width: 544.56px" src="img\e9d37a38937c8807.png"></p>
+<p>チャネルアクセストークンの[発行]をクリックし、表示されるトークンをメモします。</p>
+<h2 is-upgraded><img style="width: 318.00px" src="img\c456724551b9ec71.png"></h2>
+<p class="image-container"><img style="width: 484.00px" src="img\d02c893c5241886c.png"></p>
+<p>以下の2点がメモできていればOKです。</p>
+<ul>
+<li>チャネルシークレット</li>
+<li>チャネルアクセストークン</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ボットアカウントと友達になる" duration="5">
+        <p>ここをつなげます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\d86db136bb802905.png"></p>
+<p>LINEのQRコードでボットと友達になります。</p>
+<p class="image-container"><img style="width: 509.50px" src="img\d6c74c9c16ee04b2.png"></p>
+<p>リッチメニューが設置されていてウェルカムメッセージが来たら成功です。</p>
+<p class="image-container"><img style="width: 262.05px" src="img\13da1882bfc2a2be.png"></p>
+<aside class="special"><p>Note：あいさつメッセージは<a href="https://manager.line.biz/" target="_blank">LINE Official Account Manager</a>のあいさつメッセージ設定ですきなメッセージに変更ができます。</p>
+<p class="image-container"><img style="width: 463.50px" src="img\7d9f1247cb67efd0.png"></p>
+</aside>
+<p>この時点だと何のメッセージを送ってもLINE側の応答メッセージ機能でソーリー文が応答されます。</p>
+<p class="image-container"><img style="width: 427.00px" src="img\1f7a64e7fb661949.png"></p>
+<p>このLINEの自動応答メッセージは邪魔になるので機能オフにします。LINE Official Account Managerの[応答モード：Bot]リンクをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\d7f30b8dc2064a32.png"></p>
+<p>応答メッセージのラジオボタン[オフ]を選択します。</p>
+<p class="image-container"><img style="width: 442.50px" src="img\d3b35cee3dda6b70.png"></p>
+<p>次からはAWSの構築を行います。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="AWS IAMロール作成" duration="5">
+        <p>AWSマネジメントコンソールにログインし、東京リージョンに変更します。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\55eba4370863452.png"></p>
+<p>Lambda用のロールを作成します。IAMサービス画面でロールメニューをクリックします。</p>
+<p class="image-container"><img style="width: 270.16px" src="img\f315811526df571a.png"></p>
+<p>AWS ＞ Lambdaをクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\32ae3a5dbdd50c75.png"></p>
+<p>Lambdaからにアクセスが必要です。以下のポリシーを選択し、[次のステップ：タグ]をクリックします。</p>
+<p>AmazonLexRunBotsOnly</p>
+<p class="image-container"><img style="width: 624.00px" src="img\7ed495f0f4193ad1.png"></p>
+<p>タグの追加（オプション）画面は特に設定不要ですのでそのまま[次のステップ：確認]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\a3ae0df56a19c11f.png"></p>
+<p>ロールを作成します。ロール名にhandson-20210605-role-linebotのとおりで設定して[ロールの作成]をクリックしてください。</p>
+<p class="image-container"><img style="width: 600.50px" src="img\108207d193491fa4.png"></p>
+<p>作成できました。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\e4dc072491fa7578.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="AWS Lambdaの関数を作成する" duration="20">
+        <p>AWS Lambdaのボットプログラム部分を作成します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\f12856ad2eab0191.png"></p>
+<p>サービス名検索バーでlambdaを検索し、Lambdaサービス画面で[関数の作成]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\c61a022d8634f0b4.png"></p>
+<p>一から作成メニューで以下の設定を行い[関数の作成]をクリックします。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>関数名</p>
+</td><td colspan="1" rowspan="1"><p>handson-20210605-linebot</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>ランタイム</p>
+</td><td colspan="1" rowspan="1"><p>Node.js 12.x</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>実行ロールの選択または作成</p>
+</td><td colspan="1" rowspan="1"><p>既存のロールを使用する</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>既存のロール</p>
+</td><td colspan="1" rowspan="1"><p>handson-20210605-role-linebot</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img\4b21d9adff8a1053.png"></p>
+<p>作成できました。</p>
+<p class="image-container"><img style="width: 582.50px" src="img\5041a321aa5a318d.png"></p>
+<p>コードタブのアップロード元として[.zipファイル]を選択し</p>
+<p class="image-container"><img style="width: 601.70px" src="img\7ad08d95c85b88d3.png"></p>
+<p class="image-container"><img style="width: 414.00px" src="img\d1a904aac12572ce.png"></p>
+<p>資材のbot.zipをアップロードして[保存]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\4780fe3da913da89.png"></p>
+<p>コードソースがアップロードできました。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\733d0a47504094c4.png"></p>
+<p>設定タブ＞一般設定＞編集</p>
+<p class="image-container"><img style="width: 601.70px" src="img\ab9ac202e24e3026.png"></p>
+<p>環境変数メニューをクリックし</p>
+<p class="image-container"><img style="width: 601.70px" src="img\ef7f062452172cb3.png"></p>
+<p>環境変数にメモしてあったチャネルシークレット、チャネルアクセストークンを以下のとおり追加します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>変数名</p>
+</td><td colspan="1" rowspan="1"><p>説明</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>CHANNEL_SECRET</p>
+</td><td colspan="1" rowspan="1"><p>チャネルシークレット</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>CHANNEL_ACCESS_TOKEN</p>
+</td><td colspan="1" rowspan="1"><p>チャネルアクセストークン（ロングターム）</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img\56cc2578000df0e2.png"></p>
+<p>追加したら[保存]します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\8af08fae8bc88c5c.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Amazon API Gateway作成" duration="0">
+        <p>APIを作ります。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\b776def3d6e94935.png"></p>
+<p>マネジメントコンソールの検索バーでAPI Gatewayを検索し選択します。<img style="width: 601.70px" src="img\98b1eeb54df5dc13.png"></p>
+<p>HTTP APIの[構築]ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 493.50px" src="img\5bfb4850dc98e46e.png"></p>
+<aside class="special"><p>ノート：API Gatewayを初めて使う方は上記の画面となりますが、2回目以降ではAPIリスト表示された画面になりますので右上の[APIを作成]ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 610.00px" src="img\a4d48c1a8644dd83.png"></p>
+<p>HTTP APIの[構築]ボタンをクリック</p>
+<p class="image-container"><img style="width: 610.00px" src="img\1cd4df37a36b0323.png"></p>
+</aside>
+<p>[統合を追加]をクリック</p>
+<p class="image-container"><img style="width: 449.00px" src="img\a4fb13edfd4b596.png"></p>
+<p>統合タイプはLambdaを選択します。</p>
+<p class="image-container"><img style="width: 499.00px" src="img\7921038f7e8d6ab2.png"></p>
+<p>以下の設定を行い[次へ]をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\3f25e0ce716d2fff.png"></p>
+<p>ルートを設定します。LINEのWebhookはHTTP POSTで受ける必要がありますのでメソッドをPOST、リソースパスは/webhookとしてください。統合ターゲットは自動で選択されているはずですのでそのまま次へをクリックしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\d00ce0f393127a12.png"></p>
+<p>ステージ設定はデフォルトのままで[次へ]をクリック</p>
+<p class="image-container"><img style="width: 601.70px" src="img\e3ea9661a53312dd.png"></p>
+<p>設定を確認し[作成]をクリック</p>
+<p class="image-container"><img style="width: 624.00px" src="img\11f7583c1cf0d2e1.png"></p>
+<p>このAPIをLINEからPOSTすればLINEボットLambda関数が動くことになりますね。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\fabcb9c90ebd68ca.png"></p>
+<p>Lambda関数との統合を行ったので、LINEボットのLambda関数のトリガーにも追加されてます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\2fea32b03b8a76ca.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="LINE Webhook設定" duration="5">
+        <p>LINEからメッセージ投稿されたらAPI Gatewayで作ったURIがPOSTされるようにLINE DeveloperのWebhookの設定を行います。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\9e356b3c2ce1a4b8.png"></p>
+<p><a href="https://developers.line.biz/console" target="_blank">LINE Developersコンソール</a>のボットチャンネルMessagins API設定タブの中にある</p>
+<p class="image-container"><img style="width: 624.00px" src="img\606aeb22d8fc3dd7.png"></p>
+<p>Webhook URLの[編集]ボタンをクリックし</p>
+<p class="image-container"><img style="width: 429.00px" src="img\876937e59d3cc863.png"></p>
+<p>先ほどメモしたAPI GatewayのURL＋<strong>/webhook</strong>をWebhook URLとして入力し[更新]します。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\82b1afc29db0dad1.png"></p>
+<p>[検証]ボタンをクリックし</p>
+<p class="image-container"><img style="width: 601.70px" src="img\c119d7d26c589bd6.png"></p>
+<p>成功と表示されることを確認します。</p>
+<p class="image-container"><img style="width: 585.00px" src="img\9b6a4b7e452ce417.png"></p>
+<p>Webhookの利用をONにします。</p>
+<p class="image-container"><img style="width: 395.00px" src="img\1ecb2967a5b62bc1.png"></p>
+<p>これでAWSとつながった状態になりました。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="LINEボットで動作確認" duration="10">
+        <p>ボットの動作確認をしましょう。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\c05a6d6f92c421a2.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[参考]CloudWatchでログを確認する" duration="0">
+        <p>うまく動作しない場合やハンズオンの時間があまったらCloudWatchでどういうログがどこに出力されるのかを確認しましょう。</p>
+<h2 is-upgraded>Lambdaのログ</h2>
+<p class="image-container"><img style="width: 624.00px" src="img\88dc4a789609c7d1.png"></p>
+<p>AWSマネジメントコンソールの検索バーでCloudWatchを入力して検索し、ログをクリックします。</p>
+<p class="image-container"><img style="width: 567.00px" src="img\30aaa9ff1230153a.png"></p>
+<p>[View log groups]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\dca8eda65f8b282c.png"></p>
+<p>３つのLambda関数が表示されるので知りたいログのLambda関数をクリックし</p>
+<p class="image-container"><img style="width: 601.70px" src="img\f25916d1b838f5e2.png"></p>
+<p>任意のログストリームのリンクをクリックするとログイベント画面でログを確認することができます。</p>
+<p class="image-container"><img style="width: 516.75px" src="img\25c2bdfc7e9e68f6.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img\23b9d41198322cca.png"></p>
+<p>Lambdaサービス画面からでも同じ情報に辿りつくこともできますので目的や観点によって使い分けて調べることができます。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\3ebcfe279533db15.png"></p>
+<aside class="special"><p>CloudWatchでは色々な情報を見ることができますので色々触って試してみてください</p>
+</aside>
+<aside class="warning"><p>TIPS</p>
+<p>時間に余裕があれば、Lambdaのパラメータやキーの値、トリガ設定などをわざと誤った値にしてみてログにどう現れるかなど試してみると理解が深まります</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="[参考]Lambda関数ソースとリンク集" duration="0">
+        <h2 is-upgraded><strong>Lambda関数</strong></h2>
+<h3 is-upgraded><a href="https://gist.github.com/taketakekaho/5db119356d76fab9d65c9530e40dd18f" target="_blank">index.js</a></h3>
+<pre><code>const Line = require(&#39;@line/bot-sdk&#39;)
+const Aws = require(&#39;aws-sdk&#39;)
+
+const channelAccessToken = process.env.CHANNEL_ACCESS_TOKEN
+const channelSecret = process.env.CHANNEL_SECRET
+const lex = new Aws.LexRuntime()
+const line = new Line.Client({ channelAccessToken, channelSecret })
+
+exports.handler = async (event) =&gt; {
+        console.log(JSON.stringify(event))
+
+        // Signature validation LINEから来たデータかをbot-sdkで検証
+        if (!Line.validateSignature(event.body, channelSecret, event.headers[&#39;x-line-signature&#39;])) {
+                return {
+                        //不正だった場合400を返す
+                        statusCode: 400,
+                        body: &#39;Bad Request&#39;,
+                }
+        }
+        //LINEからきたメッセージをJSON形式に変換
+        const body = JSON.parse(event.body)
+        const events = body.events
+
+        // webhookのendpoint検証すると0件のイベントが送信されるので0件の時はステータスコード200を返す
+        if (events.length === 0) {
+                return {
+                        statusCode: 200,
+                        body: &#39;Test OK&#39;,
+                }
+        }
+
+        for (let i = 0; i &lt; events.length; i++) {
+                if (&#39;replyToken&#39; in events[i]) {
+                        const event = events[i]
+                        const replyToken = event.replyToken
+
+                        if (&#39;message&#39; in event) {
+                                const messageEvent = event
+                                //テキストメッセージ送信時の処理
+                                if (messageEvent.message.type === &#39;text&#39;) {
+                                        const inputText = messageEvent.message.text
+                                        const param = {
+                                                botAlias: &#39;prod&#39;,
+                                                botName: &#39;BookTrip_jaJP&#39;,
+                                                userId: messageEvent.source.userId,
+                                                inputText
+                                        }
+
+                                        const result = await lex.postText(param).promise()
+
+                                        const messages = []
+                                        if (result.dialogState === &#39;ReadyForFulfillment&#39;) {
+                                                messages.push({
+                                                        type: &#39;text&#39;,
+                                                        text: &#39;予約が完了しました！&#39;
+                                                })
+                                        } else {
+                                                messages.push({
+                                                        type: &#39;text&#39;,
+                                                        text: result.message
+                                                })
+                                        }
+                                        await line.replyMessage(replyToken, messages)
+                                }
+                        }
+                }
+        }
+
+        return { 
+                statusCode: 200,
+                body: &#39;OK&#39;
+        }
+}
+</code></pre>
+<h2 is-upgraded><strong>リンク集</strong></h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/lex/latest/dg/what-is.html" target="_blank">AWS公式ドキュメント What Is Amazon Lex ?</a></li>
+<li><a href="https://aws.amazon.com/jp/lex/pricing/" target="_blank">Amazon Lex料金</a></li>
+<li><a href="https://aws.amazon.com/jp/lex/faqs/#data-security" target="_blank">Amazon Lexよくある質問</a></li>
+<li><a href="https://aws.amazon.com/jp/blogs/news/amazon-lex-tokyo/" target="_blank">Amazon Lexが日本語に対応。東京リージョンでお使いいただけます</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="いかがでしたか？" duration="0">
+        <p>はじめてのAmazon Lex ×LINEボット作れましたか？ここから発展して以下のことにも挑戦してみましょう</p>
+<ul>
+<li>Amzon LexのSlotやUtterancesを追加・変更してみてボットの自然言語のゆらぎ対応が広がることを確認</li>
+<li>Intentsを追加して機能を増やしてみる</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="後片付け" duration="5">
+        <p>課金が発生しないようリソースの削除を行いましょう。</p>
+<h2 is-upgraded>Lambda関数削除</h2>
+<p>１つずつLambda関数を選択して削除します。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\b5496e47485353d7.png"></p>
+<p class="image-container"><img style="width: 624.00px" src="img\fb11ef64891605e2.png"></p>
+<p>今回作成したLambda関数がなくなればOKです。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\dd32f09f59926532.png"></p>
+<h2 is-upgraded>API Gateway削除</h2>
+<p>API Gatewayを選択して[Delete]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\8c9d465410fff1d6.png"></p>
+<p class="image-container"><img style="width: 617.00px" src="img\937b5fd1df6ebfef.png"></p>
+<h2 is-upgraded>IAM削除</h2>
+<p>IAMロールを削除します。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\9dd5d090aa4e4d5.png"></p>
+<p class="image-container"><img style="width: 624.00px" src="img\8508f8965d667dc.png"></p>
+<p>削除されたら完了です。</p>
+<h2 is-upgraded>LINEチャネル削除</h2>
+<p>LINE 公式アカウントは課金されることはありませんが、後始末として削除しておきましょう。<a href="https://developers.line.biz/console" target="_blank">LINE Developersコンソール</a>のプロバイダー画面で[チャネルの削除]ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\da27b90da4c85008.png"></p>
+<p>ポップアップを確認し、[LINE Official Account Managerを表示]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\67051271454321ab.png"></p>
+<p>LINE Official Account Managerコンソールのアカウント削除画面が別タブで開きますので内容の同意の上で[アカウントを削除]をクリックします。</p>
+<p class="image-container"><img style="width: 601.70px" src="img\96ea9a19ffa5b5e8.png"></p>
+<p class="image-container"><img style="width: 433.00px" src="img\485e866b7f54eb5.png"></p>
+<p>もし、LINEプロバイダーまで削除したい場合にはDevelopersコンソールのプロバイダー設定から[削除]を行うことができます。</p>
+<p class="image-container"><img style="width: 425.50px" src="img\db7a13db355d6387.png"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
